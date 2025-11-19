@@ -15,6 +15,14 @@ module.exports = class Baba extends Client {
     this.lavalink = null
 
     this.once('ready', this._ready.bind(this))
+    
+    // Setup raw voice state handler for Lavalink
+    this.on('raw', (d) => {
+      if (this.lavalink && ['VOICE_SERVER_UPDATE', 'VOICE_STATE_UPDATE'].includes(d.t)) {
+        this.lavalink.sendRawData(d)
+      }
+    })
+    
     this.initCommands('./src/commands')
     this.initEvents('./src/events')
   }
@@ -22,18 +30,87 @@ module.exports = class Baba extends Client {
   _ready () {
     // Initialize Lavalink after bot is ready
     try {
+      // Convert config nodes to Lavalink format
+      const lavalinkNodes = this.lavalinkConfig.nodes.map(node => ({
+        authorization: node.password,
+        host: node.host,
+        port: node.port,
+        id: node.id,
+        secure: node.secure
+      }))
+
       this.lavalink = new LavalinkManager({
-        nodes: this.lavalinkConfig.nodes,
-        sendToShard: (guildId, payload) => this.guilds.cache.get(guildId)?.shard?.send(payload),
+        nodes: lavalinkNodes,
+        sendToShard: (guildId, payload) => {
+          const guild = this.guilds.cache.get(guildId)
+          if (guild) {
+            guild.shard.send(payload)
+          }
+        },
         client: {
           id: this.user.id,
           username: this.user.username
         },
-        ...this.lavalinkConfig.options
+        autoSkip: true,
+        playerOptions: {
+          clientBasedPositionUpdateInterval: 150,
+          defaultSearchPlatform: "ytsearch",
+          volumeDecrementer: 1.0,
+          onDisconnect: {
+            autoReconnect: true,
+            destroyPlayer: false
+          },
+          onEmptyQueue: {
+            destroyAfterMs: 30_000,
+          },
+          useUnresolvedData: true
+        }
+      })
+      
+      // Setup node event listeners
+      this.lavalink.nodeManager.on('connect', (node) => {
+        this.log('info', `✅ Lavalink node ${node.id} connected!`)
+      })
+      
+      this.lavalink.nodeManager.on('disconnect', (node, reason) => {
+        this.log('warn', `⚠️ Lavalink node ${node.id} disconnected: ${reason?.message || 'Unknown'}`)
+      })
+      
+      this.lavalink.nodeManager.on('error', (node, error) => {
+        this.log('error', `❌ Lavalink node ${node.id} error: ${error.message}`)
+      })
+
+      // Setup player event listeners
+      this.lavalink.on('playerCreate', (player) => {
+        this.log('info', `🎵 Player created for guild ${player.guildId}`)
+      })
+
+      this.lavalink.on('playerDestroy', (player) => {
+        this.log('info', `🗑️ Player destroyed for guild ${player.guildId}`)
+      })
+
+      this.lavalink.on('trackStart', (player, track) => {
+        this.log('info', `▶️ Playing: ${track.info.title} in guild ${player.guildId}`)
+      })
+
+      this.lavalink.on('trackEnd', (player, track, payload) => {
+        this.log('info', `⏹️ Track ended: ${track.info.title} in guild ${player.guildId}`)
+      })
+
+      this.lavalink.on('trackError', (player, track, payload) => {
+        this.log('error', `❌ Track error: ${track.info.title} - ${payload.exception?.message || 'Unknown error'}`)
+      })
+
+      this.lavalink.on('trackStuck', (player, track, payload) => {
+        this.log('warn', `⚠️ Track stuck: ${track.info.title}`)
+      })
+
+      this.lavalink.on('playerUpdate', (player) => {
+        // Player position update
       })
       
       this.lavalink.init({ id: this.user.id, username: this.user.username })
-      this.log('info', 'Lavalink initialized successfully - Powered by TechByte & Yumi Team')
+      this.log('info', `Lavalink Manager initialized with ${lavalinkNodes.length} nodes - BABA RADIO`)
     } catch (error) {
       this.log('error', 'Failed to initialize Lavalink:', error)
       this.log('info', 'Bot will continue without Lavalink support')

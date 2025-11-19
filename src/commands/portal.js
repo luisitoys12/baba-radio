@@ -40,9 +40,9 @@ module.exports = class Portal extends Command {
     const row = new ActionRowBuilder()
       .addComponents(
         new ButtonBuilder()
-          .setLabel('🌐 Abrir Dashboard')
+          .setLabel('🌐 Dashboard')
           .setStyle(ButtonStyle.Link)
-          .setURL('file:///workspaces/baba-radio/dashboard/index.html'),
+          .setURL('https://babaradio.com/dashboard'),
         new ButtonBuilder()
           .setLabel('📚 Documentación')
           .setStyle(ButtonStyle.Link)

@@ -8,6 +8,24 @@ module.exports = class InteractionCreate extends Event {
   }
 
   async run (interaction) {
+    // Handle string select menus (category selection)
+    if (interaction.isStringSelectMenu()) {
+      if (interaction.customId === 'category_select' || interaction.customId === 'help_category_select') {
+        const { getCategoryEmbed } = require('../utils/commandCategories.js')
+        const categoryKey = interaction.values[0]
+        
+        const embed = getCategoryEmbed(categoryKey, this.client)
+        
+        if (embed) {
+          embed.setFooter({ text: 'BABA RADIO v4.0 • Usa /help para ver todas las categorías' })
+          await interaction.reply({ embeds: [embed], ephemeral: true })
+        } else {
+          await interaction.reply({ content: '❌ Categoría no encontrada.', ephemeral: true })
+        }
+      }
+      return
+    }
+
     // Handle slash commands
     if (interaction.isChatInputCommand()) {
       // Check maintenance mode
@@ -45,11 +63,16 @@ module.exports = class InteractionCreate extends Event {
           await command.runSlash(interaction)
           this.client.log('info', `${interaction.user.tag} used slash command: /${interaction.commandName}`)
         } catch (e) {
-          this.client.log('error', e)
-          if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({ content: '❌ Error executing command.', ephemeral: true })
-          } else {
-            await interaction.reply({ content: '❌ Error executing command.', ephemeral: true })
+          this.client.log('error', `Error in command ${interaction.commandName}:`, e)
+          const errorMsg = `❌ Error: ${e.message || 'Unknown error'}`
+          try {
+            if (interaction.replied || interaction.deferred) {
+              await interaction.followUp({ content: errorMsg, ephemeral: true })
+            } else {
+              await interaction.reply({ content: errorMsg, ephemeral: true })
+            }
+          } catch (replyError) {
+            this.client.log('error', 'Failed to send error message:', replyError)
           }
         }
       }

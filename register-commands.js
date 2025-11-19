@@ -38,6 +38,9 @@ const commands = [
           { name: 'MyTuner', value: 'mytuner' }
         )
     ),
+  new SlashCommandBuilder()
+    .setName('radioinfo')
+    .setDescription('Información sobre las fuentes de radio disponibles'),
   
   // Game commands
   new SlashCommandBuilder()
@@ -328,6 +331,78 @@ const commands = [
       option.setName('busqueda')
         .setDescription('Qué buscar')
         .setRequired(true)
+    ),
+  
+  // New moderation commands
+  new SlashCommandBuilder()
+    .setName('unban')
+    .setDescription('Desbanea a un usuario')
+    .addStringOption(option =>
+      option.setName('usuario')
+        .setDescription('ID del usuario a desbanear')
+        .setRequired(true)
+    ),
+  new SlashCommandBuilder()
+    .setName('slowmode')
+    .setDescription('Establece modo lento')
+    .addIntegerOption(option =>
+      option.setName('segundos')
+        .setDescription('Segundos de espera (0-21600)')
+        .setRequired(true)
+        .setMinValue(0)
+        .setMaxValue(21600)
+    ),
+  
+  // New info commands
+  new SlashCommandBuilder()
+    .setName('serverinfo')
+    .setDescription('Información del servidor'),
+  new SlashCommandBuilder()
+    .setName('userinfo')
+    .setDescription('Información de un usuario')
+    .addUserOption(option =>
+      option.setName('usuario')
+        .setDescription('Usuario a consultar')
+        .setRequired(false)
+    ),
+  new SlashCommandBuilder()
+    .setName('avatar')
+    .setDescription('Muestra el avatar de un usuario')
+    .addUserOption(option =>
+      option.setName('usuario')
+        .setDescription('Usuario')
+        .setRequired(false)
+    ),
+  
+  // New utility commands
+  new SlashCommandBuilder()
+    .setName('poll')
+    .setDescription('Crea una encuesta')
+    .addStringOption(option =>
+      option.setName('pregunta')
+        .setDescription('Pregunta de la encuesta')
+        .setRequired(true)
+    ),
+  new SlashCommandBuilder()
+    .setName('ping')
+    .setDescription('Muestra la latencia del bot'),
+  new SlashCommandBuilder()
+    .setName('invite')
+    .setDescription('Invita el bot a tu servidor'),
+  
+  // New fun commands
+  new SlashCommandBuilder()
+    .setName('coinflip')
+    .setDescription('Lanza una moneda'),
+  new SlashCommandBuilder()
+    .setName('dice')
+    .setDescription('Tira un dado')
+    .addIntegerOption(option =>
+      option.setName('lados')
+        .setDescription('Número de lados del dado')
+        .setRequired(false)
+        .setMinValue(2)
+        .setMaxValue(100)
     )
 ].map(command => command.toJSON())
 

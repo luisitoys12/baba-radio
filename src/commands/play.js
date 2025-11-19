@@ -60,7 +60,7 @@ module.exports = class Play extends Command {
       
       await player.queue.add(track)
       
-      if (!player.playing && !player.paused) {
+      if (!player.playing && !player.paused && player.queue.tracks.length === 1) {
         await player.play()
       }
 

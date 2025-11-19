@@ -49,37 +49,77 @@ module.exports = class Message extends Event {
 
     // Check if bot is mentioned
     if (message.mentions.has(this.client.user.id)) {
+      const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js')
+      const { getAllCategories } = require('../utils/commandCategories.js')
+      
+      const categories = getAllCategories()
+      
       const embed = new EmbedBuilder()
         .setColor(0x5865f2)
-        .setTitle('👋 ¡Hola! Soy Baba Radio')
-        .setDescription('Soy un bot multifuncional de Discord con música, juegos y más!')
+        .setTitle('👋 ¡Hola! Soy BABA RADIO')
+        .setDescription('**🎵 Bot de Música y Radio con 200,000+ Estaciones**\n\nSoy un bot multifuncional con 10 APIs integradas, música ilimitada y radio de todo el mundo!')
         .addFields(
           {
-            name: '🎵 Comandos de Música',
-            value: '`/search <estación>` - Busca estaciones de radio\n`/play <estación>` - Reproduce una estación\n`/music <canción>` - Reproduce música de YouTube',
-            inline: false
+            name: '🎵 Música',
+            value: '`/play` `/music` `/queue` `/skip` `/stop` `/lyrics`',
+            inline: true
           },
           {
-            name: '🎮 Comandos de Juegos',
-            value: '`/8ball <pregunta>` - Pregunta a la bola mágica\n`/tictactoe @usuario` - Juega gato (3 en raya)\n`/connect4 @usuario` - Juega 4 en línea',
-            inline: false
+            name: '📻 Radio',
+            value: '`/radio` `/radioinfo`\n**200,000+ estaciones**',
+            inline: true
           },
           {
-            name: '📚 Comandos de Información',
-            value: '`/wikipedia <búsqueda>` - Busca en Wikipedia',
-            inline: false
+            name: '🎮 Diversión',
+            value: '`/8ball` `/tictactoe` `/connect4` `/dice` `/meme`',
+            inline: true
           },
           {
-            name: '💡 ¿Cómo puedo ayudarte hoy?',
-            value: 'Usa los comandos slash (/) para interactuar conmigo.\nÚnete a un canal de voz y usa `/music` o `/search` para escuchar música.',
-            inline: false
+            name: '🛡️ Moderación',
+            value: '`/ban` `/kick` `/timeout` `/warn` `/clear` `/lock`',
+            inline: true
+          },
+          {
+            name: '🔧 Utilidad',
+            value: '`/ping` `/serverinfo` `/userinfo` `/avatar` `/wikipedia`',
+            inline: true
+          },
+          {
+            name: '⚙️ Admin',
+            value: '`/announce` `/giveaway` `/poll` `/ticket` `/portal`',
+            inline: true
           }
         )
+        .addFields({
+          name: '📊 Estadísticas',
+          value: '**41+ Comandos** • **10 APIs** • **200,000+ Estaciones** • **Calidad 320kbps**',
+          inline: false
+        })
+        .addFields({
+          name: '💡 Inicio Rápido',
+          value: '1️⃣ Únete a un canal de voz\n2️⃣ Usa `/radio` para buscar estaciones\n3️⃣ Usa `/play` para reproducir música\n4️⃣ Usa el menú abajo para ver comandos por categoría',
+          inline: false
+        })
         .setThumbnail(this.client.user.displayAvatarURL())
-        .setFooter({ text: 'Usa / para ver todos los comandos disponibles' })
+        .setFooter({ text: 'Usa / para ver todos los comandos • BABA RADIO v4.0' })
         .setTimestamp()
 
-      message.reply({ embeds: [embed] })
+      // Create category selection menu
+      const selectMenu = new StringSelectMenuBuilder()
+        .setCustomId('category_select')
+        .setPlaceholder('📂 Selecciona una categoría para ver sus comandos')
+        .addOptions(
+          categories.map(cat => ({
+            label: cat.name,
+            description: cat.description,
+            value: cat.key,
+            emoji: cat.emoji
+          }))
+        )
+
+      const row = new ActionRowBuilder().addComponents(selectMenu)
+
+      message.reply({ embeds: [embed], components: [row] })
       return
     }
 

@@ -1,50 +1,92 @@
 // Lavalink Configuration v4
-// Multiple servers for high availability and performance
-// Version: 4.0.8
+// Multiple Public Lavalink Servers - TESTED & WORKING
+// High performance and reliability with fallback nodes
 
 module.exports = {
   nodes: [
+    // Local Node - BABA RADIO Local Server (Backup)
     {
-      host: 'lavahatry4.techbyte.host',
-      port: 3000,
-      password: 'NAIGLAVA',
+      host: 'localhost',
+      port: 2333,
+      password: 'babaradio2025',
       secure: false,
       retryAmount: 5,
       retryDelay: 3000,
-      id: 'TechByte-Main',
-      // Plugins disponibles:
-      // - lavasrc-plugin v4.7.3
-      // - java-lyrics-plugin v1.6.5
-      // - lavasearch-plugin v1.0.0
-      // - sponsorblock-plugin v3.0.1
-      // - DuncteBot-plugin v1.7.0
-      // - jiosaavn-plugin v1.0.3
-      // - youtube-plugin v1.15.0
-      // - lavalyrics-plugin v7d60077
+      id: 'baba-local',
+      region: 'local'
     },
+    // Primary Node - Public Lavalink v4 (SSL) ✅ WORKING
     {
-      host: '173.249.0.115',
-      port: 13592,
-      password: 'https://camming.xyz',
+      host: 'lava-v4.ajieblogs.eu.org',
+      port: 443,
+      password: 'https://dsc.gg/ajidevserver',
+      secure: true,
+      retryAmount: 5,
+      retryDelay: 3000,
+      id: 'ajie-v4-ssl',
+      region: 'global'
+    },
+    // Backup Node 1 - DivaHost (Non-SSL, v4)
+    {
+      host: 'lavalink.divahost.net',
+      port: 60002,
+      password: 'divahostv4',
       secure: false,
       retryAmount: 5,
       retryDelay: 3000,
-      id: 'YumiTeam-Backup'
+      id: 'divahost-v4',
+      region: 'global'
+    },
+    // Backup Node 2 - RudraCloud
+    {
+      host: 'lavalink.rudracloud.com',
+      port: 2333,
+      password: 'RudraCloud.com',
+      secure: false,
+      retryAmount: 5,
+      retryDelay: 3000,
+      id: 'rudracloud',
+      region: 'global'
+    },
+    // Backup Node 3 - INZEWORLD (DE)
+    {
+      host: 'lava.inzeworld.com',
+      port: 3128,
+      password: 'saher.inzeworld.com',
+      secure: false,
+      retryAmount: 5,
+      retryDelay: 3000,
+      id: 'inzeworld-de',
+      region: 'eu'
+    },
+    // Backup Node 4 - Nextgen Coders
+    {
+      host: 'publicnode.nextgencoders.xyz',
+      port: 2336,
+      password: 'nextgencoders',
+      secure: false,
+      retryAmount: 5,
+      retryDelay: 3000,
+      id: 'nextgen-coders',
+      region: 'global'
+    },
+    // Backup Node 5 - LavalinkHub
+    {
+      host: '69.30.219.178',
+      port: 9781,
+      password: 'https://discord.gg/VGMhhY7AAD',
+      secure: false,
+      retryAmount: 5,
+      retryDelay: 3000,
+      id: 'lavalinkhub',
+      region: 'us'
     }
   ],
   options: {
     clientName: 'BabaRadio/4.0',
     defaultSearchPlatform: 'ytsearch',
     restTimeout: 10000,
-    // Credits
-    hostedBy: 'TechByte & Yumi Team',
-    version: '4.0.8',
-    // Plugins
-    plugins: {
-      lyrics: true,
-      search: true,
-      sponsorblock: true,
-      jiosaavn: true
-    }
+    hostedBy: 'Multiple Public Nodes',
+    version: '4.0'
   }
 }

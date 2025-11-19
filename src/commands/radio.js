@@ -46,16 +46,74 @@ module.exports = class Radio extends Command {
         }
       }
 
-      // Buscar en TuneIn (simulado - requiere API key real)
+      // Buscar en TuneIn
       if (source === 'all' || source === 'tunein') {
-        // Placeholder para TuneIn - requiere implementación con API real
-        // stations.push(...tuneinResults)
+        try {
+          // TuneIn API - Búsqueda de estaciones
+          const tuneinResponse = await axios.get('http://opml.radiotime.com/Search.ashx', {
+            params: {
+              query: query,
+              render: 'json',
+              formats: 'mp3,aac'
+            }
+          })
+
+          if (tuneinResponse.data && tuneinResponse.data.body) {
+            const tuneinStations = tuneinResponse.data.body
+              .filter(item => item.type === 'audio')
+              .slice(0, 5)
+              .map(s => ({
+                name: s.text || s.name,
+                city: s.subtext || 'TuneIn',
+                frequency: s.bitrate ? `${s.bitrate}kbps` : 'N/A',
+                band: 'Online',
+                logo: s.image || s.logo,
+                source: 'TuneIn',
+                data: s,
+                url: s.URL || s.url
+              }))
+            
+            stations.push(...tuneinStations)
+          }
+        } catch (e) {
+          this.client.log('error', 'TuneIn search error:', e)
+        }
       }
 
-      // Buscar en MyTuner (simulado - requiere API key real)
+      // Buscar en MyTuner
       if (source === 'all' || source === 'mytuner') {
-        // Placeholder para MyTuner - requiere implementación con API real
-        // stations.push(...mytunerResults)
+        try {
+          // MyTuner Radio API
+          const mytunerResponse = await axios.get('https://de1.api.radio-browser.info/json/stations/search', {
+            params: {
+              name: query,
+              limit: 5,
+              hidebroken: true,
+              order: 'votes',
+              reverse: true
+            },
+            headers: {
+              'User-Agent': 'BabaRadio/4.0'
+            }
+          })
+
+          if (mytunerResponse.data && mytunerResponse.data.length > 0) {
+            const mytunerStations = mytunerResponse.data.map(s => ({
+              name: s.name,
+              city: s.state || s.country || 'MyTuner',
+              frequency: s.bitrate ? `${s.bitrate}kbps` : 'N/A',
+              band: s.tags || 'Online',
+              logo: s.favicon,
+              source: 'MyTuner',
+              data: s,
+              url: s.url_resolved || s.url
+            }))
+            
+            stations.push(...mytunerStations)
+          }
+        } catch (e) {
+          this.client.log('error', 'MyTuner search error:', e)
+        }
       }
 
       if (stations.length === 0) {
@@ -113,8 +171,29 @@ module.exports = class Radio extends Command {
 
             if (station.source === 'iHeartRadio') {
               streamUrl = await iheartStreamURL(station.data)
+            } else if (station.source === 'TuneIn') {
+              // TuneIn - obtener URL de stream
+              if (station.url) {
+                // Si la URL es un playlist, obtener el stream real
+                try {
+                  const streamResponse = await axios.get(station.url)
+                  if (streamResponse.data && streamResponse.data.body && streamResponse.data.body[0]) {
+                    streamUrl = streamResponse.data.body[0].url || streamResponse.data.body[0].URL
+                  } else {
+                    streamUrl = station.url
+                  }
+                } catch (e) {
+                  streamUrl = station.url
+                }
+              }
+            } else if (station.source === 'MyTuner') {
+              // MyTuner - URL directa
+              streamUrl = station.url
             }
-            // Agregar lógica para TuneIn y MyTuner aquí
+
+            if (!streamUrl) {
+              return interaction.editReply({ content: '❌ No se pudo obtener la URL de la estación.', embeds: [], components: [] })
+            }
 
             const connection = joinVoiceChannel({
               channelId: interaction.member.voice.channel.id,
